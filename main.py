@@ -1,8 +1,10 @@
 import os
 import argparse
+from prompts import system_prompt
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from functions.call_functions import available_functions
 
 def main():
     load_dotenv()
@@ -21,7 +23,11 @@ def main():
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
     response = client.models.generate_content(
-            model='gemini-2.5-flash', contents=messages)
+            model='gemini-2.5-flash', contents=messages,
+            config=types.GenerateContentConfig(
+                tools=[available_functions], system_instruction=system_prompt
+            )
+    )
 
     if response.usage_metadata is None:
         raise RuntimeError("no metadata returned")
@@ -31,7 +37,11 @@ def main():
 
 
     print("Response:")
-    print(response.text)
+    if response.function_calls:
+        for function_call in response.function_calls:
+            print(f"Calling function: {function_call.name}({function_call.args})")
+    else:
+        print(response.text)
 
 if __name__ == "__main__":
     main()
