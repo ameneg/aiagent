@@ -10,6 +10,17 @@ def get_files_info(working_directory: str, directory: str = ".") -> str:
         if not os.path.isdir(target_dir):
             return f'Error: "{directory}" is not a directory'
         else:
-            return f'Success: "{directory}" is within the working directory'
+            try:
+                output = ""
+                for item in os.listdir(target_dir):
+                    item_path = os.path.join(target_dir, item)
+                    output = (
+                        output + "- " + item + ": file_size=" + str(os.path.getsize(item_path)) + " bytes, is_dir="
+                        + str(os.path.isdir(item_path)) + "\n"
+                    )
+                return output
+            except Exception as except_msg:
+                return f'Error: {except_msg}'
+
     except Exception as except_msg:
         return f'Error: {except_msg}'
